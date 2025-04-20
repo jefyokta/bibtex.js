@@ -1,3 +1,5 @@
+import { Cite } from ".";
+
 export const objectToBib = (cite: Cite[]): string => {
     return cite
       .map((c) => {

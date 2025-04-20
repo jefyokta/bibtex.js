@@ -1,3 +1,4 @@
+import { Cite } from ".";
 import { bibToObject } from "./converter";
 
 export type CiteLanguage = {
@@ -32,6 +33,14 @@ export type CiteLanguage = {
     setCite(cite: Cite) {
       this.cite = cite;
       return this;
+    }
+
+    getCite():Cite{
+      return this.cite
+    }
+    getId():string{
+
+      return this.cite.id
     }
   
     setMaxAuthors(maxAuthors: number) {

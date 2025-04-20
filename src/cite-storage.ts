@@ -1,3 +1,4 @@
+import { Cite } from ".";
 import { bibToObject } from "./converter";
 
 export interface CiteStorage {
@@ -9,9 +10,12 @@ export interface CiteStorage {
 }
 
 export class CiteLocalStorage implements CiteStorage {
-  constructor(bibContent: string) {
-    const cites = bibToObject(bibContent);
-    localStorage.setItem("cites", JSON.stringify(cites));
+  constructor(bibContent?: string) {
+    if (bibContent) {
+      
+      const cites = bibToObject(bibContent);
+      localStorage.setItem("cites", JSON.stringify(cites));
+    }
   }
   getAll() {
     const cs = localStorage.getItem("cites");
@@ -55,10 +59,12 @@ export class CiteIndexDB implements CiteStorage {
   private storeName = "cites";
   private db: IDBDatabase | null = null;
 
-  constructor(bibContent: string) {
+  constructor(bibContent?: string) {
     this.init();
-    const cites = bibToObject(bibContent);
-    cites.forEach((cite) => this.add(cite));
+    if (bibContent) { 
+      const cites = bibToObject(bibContent);
+      cites.forEach((cite) => this.add(cite));
+    }
   }
 
   private init() {

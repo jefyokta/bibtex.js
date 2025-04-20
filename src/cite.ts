@@ -1,8 +1,9 @@
 import { bibToObject, objectToBib } from "./converter";
 import type { CiteStorage } from "./cite-storage";
 import { getBibFromDoi } from "./utils";
+import { Cite } from ".";
 
-export default class CiteManager {
+ class CiteManager {
   static storage: CiteStorage | null = null;
 
   static init(storage: CiteStorage) {
@@ -57,3 +58,6 @@ export default class CiteManager {
   }
   static setFromBib() {}
 }
+
+
+export {CiteManager}
