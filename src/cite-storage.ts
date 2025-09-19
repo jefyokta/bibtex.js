@@ -1,4 +1,4 @@
-import { Cite } from ".";
+import { Cite } from "./index";
 import { bibToObject } from "./converter";
 
 export interface CiteStorage {
@@ -9,26 +9,36 @@ export interface CiteStorage {
   add(cite: Cite): void;
 }
 
+export interface CiteStorageConstructor<T>{
+    new(bibContent?:string|Cite[]):CiteStorage;
+    fromObject(cites:Cite[]):T;
+    fromBib(cites:string):T;
+
+}
+
 export class CiteLocalStorage implements CiteStorage {
-  constructor(bibContent?: string) {
-    if (bibContent) {
-      
-      const cites = bibToObject(bibContent);
+  constructor(bibContent?: string | Cite[]) {
+    if(bibContent){
+      let cites = bibContent;
+      if (typeof bibContent == 'string') {
+         cites = bibToObject(bibContent);
+      }
       localStorage.setItem("cites", JSON.stringify(cites));
     }
+  }
+  static fromObject(cites:Cite[]){
+    return new CiteLocalStorage(cites)
+
   }
   getAll() {
     const cs = localStorage.getItem("cites");
     const cites: Cite[] = JSON.parse(cs || "[]");
-    // console.log(cites,cs);
-
     return cites as Cite[];
   }
 
   get(key: string) {
     const cites = this.getAll();
     const c = cites.find((cite) => cite.id === key) || undefined;
-
     return c;
   }
 
@@ -59,12 +69,20 @@ export class CiteIndexDB implements CiteStorage {
   private storeName = "cites";
   private db: IDBDatabase | null = null;
 
-  constructor(bibContent?: string) {
+  constructor(bibContent?: string|Cite[]) {
     this.init();
-    if (bibContent) { 
-      const cites = bibToObject(bibContent);
+    let cites = bibContent;
+    if (cites) { 
+      if (typeof cites == 'string') {
+        cites = bibToObject(cites);
+      }
       cites.forEach((cite) => this.add(cite));
     }
+  }
+ static fromObject(cites:Cite[]){
+
+    return new CiteIndexDB(cites)
+
   }
 
   private init() {

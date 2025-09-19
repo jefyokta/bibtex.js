@@ -1,4 +1,4 @@
-import { Cite } from ".";
+import { Cite } from "./index";
 import { bibToObject } from "./converter";
 
 export type CiteLanguage = {

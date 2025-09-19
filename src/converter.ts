@@ -1,4 +1,4 @@
-import { Cite } from ".";
+import { Cite } from "./index";
 
 export const objectToBib = (cite: Cite[]): string => {
     return cite
@@ -7,7 +7,6 @@ export const objectToBib = (cite: Cite[]): string => {
         const fields = Object.entries(data)
           .map(([key, value]) => `  ${key} = {${value}}`)
           .join(",\n");
-  
         return `@${type}{${id},\n${fields}\n}`;
       })
       .join("\n\n");

@@ -1,7 +1,7 @@
 import { bibToObject, objectToBib } from "./converter";
 import type { CiteStorage } from "./cite-storage";
 import { getBibFromDoi } from "./utils";
-import { Cite } from ".";
+import { Cite } from "./index";
 
  class CiteManager {
   static storage: CiteStorage | null = null;
