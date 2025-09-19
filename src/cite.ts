@@ -1,47 +1,47 @@
 import { bibToObject, objectToBib } from "./converter";
 import type { CiteStorage } from "./cite-storage";
-import { getBibFromDoi } from "./utils";
+import { CiteUtils, getBibFromDoi } from "./utils";
 import { Cite } from "./index";
 
  class CiteManager {
-  static storage: CiteStorage | null = null;
+  private static storage: CiteStorage;
 
   static init(storage: CiteStorage) {
-    this.storage = storage;
+    return new CiteManager(storage)
  
   }
 
-  private static ensureStorageInitialized() {
-    if (!this.storage) {
-      throw new Error("CiteManager not initialized");
-    }
+  static create(storage: CiteStorage){
+    return this.init(storage)
   }
 
-  static getAll(): Cite[] {
-    this.ensureStorageInitialized();
-    return this.storage!.getAll();
+  constructor(storage:CiteStorage){
+    CiteManager.storage = storage;
   }
 
-  static get(key: string): Cite | undefined {
-    this.ensureStorageInitialized();
-    return this.storage!.get(key);
+  static getAll(): CiteUtils[] {
+    return this.storage.getAll().map(c=>new CiteUtils(c));
   }
 
-  static update(key: string, data: Record<string, string>) {
-    this.ensureStorageInitialized();
-    this.storage!.update(key, data);
+  static get(key: string): CiteUtils | undefined {
+    const c =this.storage.get(key);
+    return c ? new CiteUtils(c) : undefined;
+  }
+
+  static update(key: string, data: Cite & Record<string, string>) {
+    this.storage.update(key, data);
  
   }
 
   static delete(key: string) {
-    this.ensureStorageInitialized();
-    this.storage!.delete(key);
+  
+    this.storage.delete(key);
  
   }
 
   static add(cite: Cite) {
-    this.ensureStorageInitialized();
-    this.storage!.add(cite);
+  
+    this.storage.add(cite);
  
   }
 
@@ -53,10 +53,13 @@ import { Cite } from "./index";
   }
 
   static toBib(): string {
-    this.ensureStorageInitialized();
-    return objectToBib(this.getAll());
+  
+    return objectToBib(this.getAll().map(c=>c.getCite()));
   }
-  static setFromBib() {}
+  static getStorage():CiteStorage{
+
+    return this.storage;
+  }
 }
 
 

@@ -1,6 +1,6 @@
 {
   "name": "bibtex.js",
-  "version": "0.0.17-beta",
+  "version": "0.0.1",
   "description": "Bib manager for browser",
   "type": "module",
   "main": "dist/index.js",
