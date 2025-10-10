@@ -1,12 +1,13 @@
 import { Cite } from "./index";
 import { bibToObject } from "./converter";
+import Dexie, { Table } from "dexie";
 
 export interface CiteStorage {
-  getAll(): Cite[];
-  get(key: string): Cite | undefined;
-  update(key: string, data: Record<string, string>): void;
-  delete(key: string): void;
-  add(cite: Cite): void;
+  getAll(): Cite[] | Promise<Cite[]>;
+  get(key: string): Cite | Promise<Cite> |undefined;
+  update(key: string, data: Partial<Cite>): void | Promise<void>;
+  remove(key: string): void | Promise<void>;
+  add(cite: Cite): void | Promise<void>;
 }
 
 export interface CiteStorageConstructor<T>{
@@ -51,7 +52,7 @@ export class CiteLocalStorage implements CiteStorage {
     }
   }
 
-  delete(key: string) {
+  remove(key: string) {
     const cites = this.getAll();
     cites.filter((cite) => cite.id !== key);
     localStorage.setItem("cites", JSON.stringify(cites));
@@ -64,104 +65,62 @@ export class CiteLocalStorage implements CiteStorage {
   }
 }
 
-export class CiteIndexDB implements CiteStorage {
-  private dbName = "CiteDB";
-  private storeName = "cites";
-  private db: IDBDatabase | null = null;
+export class CiteIndexDB extends Dexie implements CiteStorage {
+  cites!: Table<Cite, string>;
 
-  constructor(bibContent?: string|Cite[]) {
-    this.init();
-    let cites = bibContent;
-    if (cites) { 
-      if (typeof cites == 'string') {
+  constructor() {
+    super("CiteDB");
+    this.version(1).stores({
+      cites: "id",
+    });
+
+    this.cites = this.table("cites");
+
+  }
+
+  static async create(bibContent?: string | Cite[]){
+    const db = new CiteIndexDB;
+    await db.init(bibContent);
+    return db;
+
+  }
+
+  static fromObject(cites: Cite[]) {
+    return  CiteIndexDB.create(cites);
+  }
+
+  static fromBib(bib: string) {
+    return  CiteIndexDB.create(bibToObject(bib));
+  }
+
+  private async init(bibContent?: string | Cite[]) {
+    if (bibContent) {
+      let cites = bibContent;
+      if (typeof cites === "string") {
         cites = bibToObject(cites);
       }
-      cites.forEach((cite) => this.add(cite));
+      await this.cites.bulkPut(cites as Cite[]);
     }
   }
- static fromObject(cites:Cite[]){
-
-    return new CiteIndexDB(cites)
-
+ async getAll(): Promise<Cite[]> {
+    return await this.cites.toArray();
   }
 
-  private init() {
-    const request = indexedDB.open(this.dbName, 1);
+ async get(key: string): Promise<Cite | undefined> {
 
-    request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(this.storeName)) {
-        db.createObjectStore(this.storeName, { keyPath: "id" });
-      }
-    };
-
-    request.onsuccess = (event: Event) => {
-      this.db = (event.target as IDBOpenDBRequest).result;
-    };
-
-    request.onerror = (event) => {
-      console.error(
-        "IndexedDB error:",
-        (event.target as IDBOpenDBRequest).error,
-      );
-    };
+  return await this.cites.get(key)
   }
 
-  private getStore(mode: IDBTransactionMode): IDBObjectStore | null {
-    if (!this.db) {
-      console.error("Database not initialized");
-      return null;
-    }
-
-    const transaction = this.db.transaction(this.storeName, mode);
-    return transaction.objectStore(this.storeName);
+ async  update(key: string, data: Cite) {
+  this.cites.put(data,key)
+    
   }
 
-  getAll(): Cite[] {
-    const store = this.getStore("readonly");
-    if (!store) return [];
-
-    const request = store.getAll();
-    return this.blockingRequest(request) as Cite[];
+ async remove(key: string) {
+  await  this.cites.delete(key); 
   }
 
-  get(key: string): Cite | undefined {
-    const store = this.getStore("readonly");
-    if (!store) return undefined;
-
-    const request = store.get(key);
-    return this.blockingRequest(request) as Cite | undefined;
-  }
-
-  update(key: string, data: Record<string, string>) {
-    const cite = this.get(key);
-    if (cite) {
-      this.add({ ...cite, ...data });
-    }
-  }
-
-  delete(key: string) {
-    const store = this.getStore("readwrite");
-    if (store) {
-      store.delete(key);
-    }
-  }
-
-  add(cite: Cite) {
-    const store = this.getStore("readwrite");
-    if (store) {
-      store.put(cite);
-    }
-  }
-
-  private blockingRequest(request: IDBRequest): any {
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    }).then((result) => {
-      let output: any;
-      setTimeout(() => (output = result), 0);
-      return output;
-    });
+ async add(cite: Cite) {
+   await this.cites.put(cite); 
   }
 }

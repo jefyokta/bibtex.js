@@ -1,5 +1,5 @@
 import { Cite } from "./index";
-
+ 
 export const objectToBib = (cite: Cite[]): string => {
     return cite
       .map((c) => {
@@ -14,6 +14,11 @@ export const objectToBib = (cite: Cite[]): string => {
   
   export const bibToObject = (bibContent: string): Cite[] => {
     const entryRegex = /@(\w+)\{([^,]+),([\s\S]*?)}(?=\s*@|\s*$)/g;
+    if (!bibContent.matchAll(entryRegex)) {
+
+      return []
+      
+    }
     const matches = [...bibContent.matchAll(entryRegex)];
   
     if (matches.length === 0) {
@@ -30,7 +35,7 @@ export const objectToBib = (cite: Cite[]): string => {
         fieldMatches.map(([_, key, value]) => [key.trim(), value.trim()]),
       );
   
-      return { id: id, type: type, data: fieldData || {} };
+      return { id: id, type: type, data: fieldData || {} , original:bibContent };
     });
   };
   

@@ -1,10 +1,10 @@
 {
   "name": "bibtex.js",
-  "version": "0.0.1",
+  "version": "0.0.7",
   "description": "Bib manager for browser",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "exports": {
     "import": "./dist/index.js",
@@ -19,10 +19,17 @@
     "typescript": "^5.0.0"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "bun build src/index.ts --outfile dist/index.esm.js --format esm --minify && bun build src/index.ts --outfile dist/index.cjs.js --format cjs --minify && tsc --declaration --emitDeclarationOnly --outDir dist",
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@citation-js/core": "^0.7.18",
+    "@citation-js/plugin-bibtex": "^0.7.18",
+    "@citation-js/plugin-csl": "^0.7.18",
+    "dexie": "^4.2.0",
+    "latex-to-unicode": "^0.1.0"
   }
 }

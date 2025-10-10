@@ -3,6 +3,7 @@ export type Cite = {
     id: string;
     type: string;
     data: Record<string, string>;
+    original:string
   };
   
   export { CiteManager } from "./cite";
