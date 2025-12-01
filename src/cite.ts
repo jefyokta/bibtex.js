@@ -1,9 +1,11 @@
 import { bibToObject, objectToBib } from "./converter";
 import type { CiteStorage } from "./cite-storage";
 import { CiteUtils, getBibFromDoi } from "./utils";
-import { Cite } from "./index";
 type Awaitable<T> = T | Promise<T>;
 
+/**
+ * @deprecated
+ */
  class CiteManager {
   private static storage: CiteStorage;
 
@@ -22,15 +24,12 @@ type Awaitable<T> = T | Promise<T>;
 
 static getAll(): Awaitable<CiteUtils[]> {
   const result = this.storage.getAll();
-  return result instanceof Promise
-    ? result.then(cites => cites.map(c => new CiteUtils(c)))
-    : result.map(c => new CiteUtils(c));
+  return []
 }
 
   static get(key: string): Awaitable<CiteUtils> | undefined {
     const c =this.storage.get(key);
-    return  c instanceof Promise ? c.then(c=> new CiteUtils(c)) :
-      ( c ? new CiteUtils(c) : undefined);
+    return  undefined
   }
 
   static update(key: string, data: Record<string, string>) {
@@ -48,7 +47,7 @@ static getAll(): Awaitable<CiteUtils[]> {
  
   }
 
-  static add(cite: Cite) {
+  static add(cite: any) {
   const res =  this.storage.add(cite)
   res instanceof Promise && res.then(()=>{})
 
@@ -66,10 +65,10 @@ static getAll(): Awaitable<CiteUtils[]> {
   const cites = this.getAll();
 
   if (cites instanceof Promise) {
-    return cites.then(list => objectToBib(list.map(c => c.getCite())));
+    // return cites.then(list => objectToBib(list.map(c => c.getCite())));
   }
-  const result = objectToBib(cites.map(c => c.getCite()));
-  return result;
+  // const result = objectToBib(cites.map(c => c.getCite()));
+  return '';
 }
 
   static getStorage():CiteStorage{

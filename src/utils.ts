@@ -1,50 +1,102 @@
-import { Cite } from "./index";
 import { bibToObject } from "./converter";
 import latexToUnicode from "latex-to-unicode";
+import { CslItem, CslJson } from "./types/type";
+import Cite from "citation-js";
 
+    /**
+     * @deprecated
+     */
 export type CiteLanguage = {
     conjunction: string;
     etal: string;
   };
-  
+    /**
+     * @deprecated
+     */
   export const CiteLangID: CiteLanguage = {
     conjunction: "dan",
     etal: "dkk.",
   };
   
+      /**
+     * @deprecated
+     */
   export const CiteLangEN: CiteLanguage = {
     conjunction: "and",
     etal: "et al.",
   };
   
   export class CiteUtils {
-    private cite: Cite;
+    private cite: CslItem;
+
+    private id?:string
+    /**
+     * @deprecated
+     */
     private static lang: CiteLanguage = CiteLangID;
-    private maxAuthors = 2;
+
+    constructor(bib:string);
+    constructor(cite:CslItem)
+    constructor(cite: CslItem|string) {
+      if (typeof cite =='string') {
+      const csl =    new Cite(cite).data[0] as CslItem;
+      this.cite = csl
+        
+      } else{
+
+        this.cite = cite;
+      }
+    }
+
   
-    constructor(cite: Cite) {
-      this.cite = cite;
-    }
-    toCiteA(): string {
-      return `${this.formatAuthorname()} (${this.cite.data.year})`;
-    }
     toCite(): string {
-      return `(${this.formatAuthorname()}, ${this.cite.data.year})`;
+      return (new Cite(this.cite)).format("citation",{
+        format:"text",
+        lang:"id-ID",
+        form: 'narrative',
+        template:"apa"
+      }).replace("&","dan");
     }
-    setCite(cite: Cite) {
+
+    toCiteA(): string {
+   const citeString = (new Cite(this.cite)).format("citation",{
+     format:"text",
+     lang:"id-ID",
+     template:"apa"
+   });
+   
+
+   const noOpenParen = citeString.replace('(', '');
+   const commaIndex = noOpenParen.lastIndexOf(', '); 
+
+   const authorPart = noOpenParen.substring(0, commaIndex); 
+   const yearPart = noOpenParen.substring(commaIndex + 2).replace(')', ''); 
+
+   return `${authorPart.replace("&","dan")} (${yearPart})`;
+}
+    setCite(cite: CslItem) {
       this.cite = cite;
       return this;
     }
 
-    getCite():Cite{
+    getCite():CslItem{
       return this.cite
     }
+
+    setId(id:string):CiteUtils{
+      this.id =id
+      return this
+    }
+
+
     getId():string{
 
-      return this.cite.id
+      return this.id || this.cite.id
     }
+    /**
+     * @deprecated
+     */
     setMaxAuthors(maxAuthors: number) {
-      this.maxAuthors = maxAuthors;
       return this;
     }
   
@@ -54,8 +106,7 @@ export type CiteLanguage = {
     }
   
     getTitle() {
-      console.log(this.cite.data.title)
-      return latexToUnicode(this.cite.data.title);
+      return this.cite.title || this.cite["original-title"];
     }
     toListItem(){
         const li =  document.createElement('li')
@@ -64,56 +115,22 @@ export type CiteLanguage = {
 
     return li;
     }
-    private parseAuthorObject(authors: { given?: string; family?: string }[]): string {
-      return authors
-        ?.map(a => {
-          const family = a.family?.trim() || "";
-          const given = a.given?.trim() || "";
-          return family && given ? `${family}, ${given}` : family || given;
-        })
-        .filter(Boolean)
-        .join(" and ");
+
+
+
+    /**
+     * 
+     * @deprecated
+     */
+    formatAuthorName(){
+
+     return ""
     }
-
-    formatAuthorname(): string {
-    const authors = this.cite?.data?.author;
-    if (!authors) return this.getTitle();
-
-    const names = typeof authors === "object"
-      ? this.parseAuthorObject(authors)
-      : authors;
-
-    const arr = names
-      .split(" and ")
-      .map(n => {
-        n = n.trim();
-        if (!n) return "";
-        if (n.includes(",")) {
-          const [family] = n.split(",").map(s => s.trim());
-          return latexToUnicode(family);
-        }
-        const parts = n.split(" ");
-        return latexToUnicode(parts[parts.length - 1]);
-      })
-      .filter(Boolean);
-
-    if (arr.length === 0) return this.getTitle();
-
-    if (arr.length > this.maxAuthors) {
-      return `${arr.slice(0, this.maxAuthors).join(", ")} ${CiteUtils.lang.etal}`;
-    }
-    if (arr.length === 1) {
-      return arr[0];
-    }
-
-    const lastAuthor = arr.pop();
-    return arr.join(", ").concat(` ${CiteUtils.lang.conjunction} ${lastAuthor}`);
-  }
 
 
   }
 
-export const getBibFromDoi = async (doiurl: string): Promise<Cite> => {
+export const getBibFromDoi = async (doiurl: string): Promise<CslItem> => {
     try {
       const response = await fetch(doiurl, {
         method: "GET",

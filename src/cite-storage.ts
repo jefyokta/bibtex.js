@@ -1,5 +1,4 @@
 import { Cite } from "./index";
-import { bibToObject } from "./converter";
 import Dexie, { Table } from "dexie";
 
 export interface CiteStorage {
@@ -22,7 +21,7 @@ export class CiteLocalStorage implements CiteStorage {
     if(bibContent){
       let cites = bibContent;
       if (typeof bibContent == 'string') {
-         cites = bibToObject(bibContent);
+        //  cites = bibToObject(bibContent);
       }
       localStorage.setItem("cites", JSON.stringify(cites));
     }
@@ -90,14 +89,14 @@ export class CiteIndexDB extends Dexie implements CiteStorage {
   }
 
   static fromBib(bib: string) {
-    return  CiteIndexDB.create(bibToObject(bib));
+    // return  CiteIndexDB.create(bibToObject(bib));
   }
 
   private async init(bibContent?: string | Cite[]) {
     if (bibContent) {
       let cites = bibContent;
       if (typeof cites === "string") {
-        cites = bibToObject(cites);
+        // cites = bibToObject(cites);
       }
       await this.cites.bulkPut(cites as Cite[]);
     }

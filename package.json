@@ -1,13 +1,13 @@
 {
   "name": "bibtex.js",
-  "version": "0.0.7",
+  "version": "0.1.0",
   "description": "Bib manager for browser",
   "type": "module",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "exports": {
-    "import": "./dist/index.js",
+    "import": "./dist/index.esm.js",
     "types": "./dist/index.d.ts"
   },
   "files": [
@@ -28,7 +28,9 @@
   "dependencies": {
     "@citation-js/core": "^0.7.18",
     "@citation-js/plugin-bibtex": "^0.7.18",
-    "@citation-js/plugin-csl": "^0.7.18",
+    "@citation-js/plugin-csl": "^0.7.21",
+    "astrocite": "^0.16.4",
+    "citation-js": "^0.7.21",
     "dexie": "^4.2.0",
     "latex-to-unicode": "^0.1.0"
   }
