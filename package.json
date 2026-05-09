@@ -1,6 +1,6 @@
 {
   "name": "bibtex.js",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Bib manager for browser",
   "type": "module",
   "main": "dist/index.cjs.js",
@@ -31,7 +31,7 @@
     "@citation-js/plugin-csl": "^0.7.21",
     "astrocite": "^0.16.4",
     "citation-js": "^0.7.21",
-    "dexie": "^4.2.0",
+    "dexie": "^4.2.2",
     "latex-to-unicode": "^0.1.0"
   }
 }
